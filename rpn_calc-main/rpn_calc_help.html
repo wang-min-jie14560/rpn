@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <title>RPN 逆波兰计算器使用手册</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🐳</text></svg>">
+  <meta content="text/html; charset=utf-8" http-equiv="content-type">
+  <meta content="width=device-width, initial-scale=1" name="viewport">
+  <meta content="nimib 0.3.12" name="generator">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/light.min.css">
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/pietroppeter/nimib/assets/atom-one-light.css'>
+    <script src="https://cdn.jsdelivr.net/gh/pietroppeter/nimib@main/assets/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+  <style>
+.nb-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.nb-small {
+  font-size: 0.8rem;
+}
+button.nb-small {
+  float: right;
+  padding: 2px;
+  padding-right: 5px;
+  padding-left: 5px;
+}
+section#source {
+  display:none
+}
+pre > code {
+  font-size: 1.2em;
+}
+.nb-output {
+  line-height: 1.15;
+}
+figure {
+  margin: 2rem 0;
+}
+figcaption {
+  text-align: center;
+}
+  
+</style>
+  
+</head>
+<body>
+<header>
+<div class="nb-box">
+  <span><a href=".">🏡</a></span>
+  <span><code>rpn_calc_help.nim</code></span>
+  <span></span>
+</div>
+<hr>
+</header><main>
+<p>RPN 逆波兰计算器使用说明</p>
+<p>安装与编译
+g++ -std=c++17 rpn_calc.cpp -o rpn_calc
+./rpn_calc</p>
+<p>基本用法
+1 2 + 3 + -&gt; 6
+5 1 2 + 4 * + 3 - -&gt; 14</p>
+<p>支持运算
+&quot;+&quot;, &quot;-&quot;, &quot;*&quot;, &quot;/&quot;, &quot;^&quot;, &quot;?&quot;</p>
+<p>栈操作与命令
+&quot;c&quot;, &quot;s&quot;, &quot;q&quot;</p>
+<p>错误处理
+除零错误
+栈空错误
+操作数不足
+无效输入
+负数平方根</p>
+</main>
+<footer>
+<div class="nb-box">
+  <span><span class="nb-small">made with <a href="https://pietroppeter.github.io/nimib/">nimib 🐳</a></span></span>
+  <span></span>
+  <span><button class="nb-small" id="show" onclick="toggleSourceDisplay()">Show Source</button></span>
+</div>
+</footer>
+<section id="source">
+<pre><code class="nohighlight nim hljs"><span class="hljs-keyword">import</span> nimib
+
+nbInit
+nbDoc.title = <span class="hljs-string">&quot;RPN 逆波兰计算器使用手册&quot;</span>
+
+nbText: <span class="hljs-string">&quot;&quot;&quot;
+RPN 逆波兰计算器使用说明
+
+安装与编译
+g++ -std=c++17 rpn_calc.cpp -o rpn_calc
+./rpn_calc
+
+基本用法
+1 2 + 3 + -&gt; 6
+5 1 2 + 4 * + 3 - -&gt; 14
+
+支持运算
+&quot;+&quot;, &quot;-&quot;, &quot;*&quot;, &quot;/&quot;, &quot;^&quot;, &quot;?&quot;
+
+栈操作与命令
+&quot;c&quot;, &quot;s&quot;, &quot;q&quot;
+
+错误处理
+除零错误
+栈空错误
+操作数不足
+无效输入
+负数平方根
+&quot;&quot;&quot;</span>
+
+nbSave()
+</code></pre>
+</section><script>
+function toggleSourceDisplay() {
+  var btn = document.getElementById("show")
+  var source = document.getElementById("source");
+  if (btn.innerHTML=="Show Source") {
+    btn.innerHTML = "Hide Source";
+    source.style.display = "block";
+  } else {
+    btn.innerHTML = "Show Source";
+    source.style.display = "none";
+  }
+}
+</script></body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>C++ 逆波兰计算器教程</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+<link rel="stylesheet" media="(prefers-color-scheme: dark)"
+  href="https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/night-owl.css">
+<link rel="stylesheet" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)"
+  href="https://cdn.jsdelivr.net/gh/highlightjs/highlight.js/src/styles/atom-one-light.css">
+<style>
+pre code { border-radius: 4px 4px 0 0; }
+pre { border: 1px solid #809eb7; border-radius: 4px 4px 0 0; margin-bottom: 0; }
+pre.nb-output { border: 1px solid #809eb7; border-radius: 0 0 8px 8px; border-top: none;
+  padding: 0.8em; margin-top: 0; overflow-x: auto; }
+blockquote { border-left: 4px solid #4e89c7; padding-left: 10px; color: #555; }
+</style>
+</head>
+<body>
+<h1>C++ 逆波兰计算器教程</h1>
+
+<ul>
+<li><strong>作者</strong>：vito</li>
+<li>语言 ：C++17</li>
+<li><strong>框架</strong>：标准模板库（STL）</li>
+<li><strong>工具</strong>：Nimib 文档系统</li>
+<li>版本 ：1.0</li>
+</ul>
+
+<p>“编程是一种思维艺术 —— 计算机只是忠实的画布。”</p >
+
+<h2>目录</h2>
+
+<ol>
+<li>1. 项目介绍</li>
+<li>2. 项目结构设计</li>
+<li>3. RPNCalculator 类实现</li>
+<li>4. 表达式解析与执行</li>
+<li>5. 主程序与交互界面</li>
+<li>6. 测试样例</li>
+<li>7. 扩展与优化建议</li>
+</ol>
+
+<h3 id="1.-项目介绍">1. 项目介绍</h3>
+
+<p>本教程将带你一步步实现一个 功能完整的逆波兰表达式（RPN）计算器。</p >
+
+<p>逆波兰表示法（Reverse Polish Notation）是一种后缀表达式，它不需要括号即可表达复杂的算术逻辑。</p >
+
+<p>例如：</p >
+
+<table>
+<thead>
+<tr><th>中缀表达式</th><th>逆波兰形式</th><th>结果</th></tr>
+</thead>
+<tbody>
+<tr><td>5 + 2</td><td>5 2 +</td><td>7</td></tr>
+<tr><td>(3 + 4) × 5</td><td>3 4 + 5 *</td><td>35</td></tr>
+<tr><td>(5 - 3) ^ 2</td><td>5 3 - 2 ^</td><td>4</td></tr>
+</tbody>
+</table>
+
+<p>该程序支持：</p >
+
+<ul>
+<li>基本四则运算（ <code>+ - * /</code>）</li>
+<li>开方运算 <code>sqrt</code></li>
+<li>幂运算 <code>^</code></li>
+<li>斐波那契序列 <code>fib</code></li>
+<li>命令退出（ <code>q</code> / <code>quit</code>）</li>
+</ul>
+
+<p>同时，它还具备异常处理机制和输入验证，保证交互安全。</p >
+
+<p>RPN 表达式的最大优点是 无需括号且计算顺序明确，这使得它在解释器与虚拟机中广泛使用（如 Forth、PostScript、JVM 栈帧计算模型等）。</p >
+
+<h3 id="2.-项目结构设计">2. 项目结构设计</h3>
+
+<p>程序的核心组件由以下几个部分组成：</p >
+
+<ol>
+<li><strong>RPNCalculator 类</strong>：</li>
+<li>isNumber 函数 ：</li>
+<li>evaluateRPN 函数 ：</li>
+<li>main 函数 ：</li>
+</ol>
+
+<p>结构图如下：</p >
+
+<pre><code>RPNCalculator
+├── push()
+├── pop()
+├── calculate()
+│    ├── + - * / ^ sqrt fib
+│    └── 内部调用 fibonacci()
+├── top()
+├── clear()
+└── size()
+</code></pre>
+
+<h3 id="3.-rpncalculator-类实现">3. RPNCalculator 类实现</h3>
+
+<h4 id="3.1-栈封装与基本方法">3.1 栈封装与基本方法</h4>
+
+<p>我们使用 <code>std::stack&lt;double&gt;</code> 作为计算的核心容器。</p >
+
+<pre><code class="language-cpp">class RPNCalculator {
+private:
+    std::stack&lt;double&gt; stack;
+
+public:
+    void push(double value) { stack.push(value); }
+
+    double pop() {
+        if (stack.empty()) throw std::runtime_error("错误: 栈为空");
+        double v = stack.top();
+        stack.pop();
+        return v;
+    }
+
+    double top() const {
+        if (stack.empty()) throw std::runtime_error("错误: 栈为空");
+        return stack.top();
+    }
+
+    void clear() { while (!stack.empty()) stack.pop(); }
+
+    size_t size() const { return stack.size(); }
+};
+</code></pre>
+
+<p>这部分代码封装了一个安全的栈操作接口，避免了直接访问 STL 容器带来的错误风险。</p >
+
+<h4 id="3.2-运算实现">3.2 运算实现</h4>
+
+<p>通过 <code>calculate()</code> 方法，我们支持多种运算类型，包括四则运算、平方根、幂运算及斐波那契。</p >
+
+<pre><code class="language-cpp">void calculate(const std::string&amp; op) {
+    if (op == "+") { push(pop() + pop()); }
+    else if (op == "-") { double b = pop(); push(pop() - b); }
+    else if (op == "*") { push(pop() * pop()); }
+    else if (op == "/") {
+        double b = pop();
+        if (b == 0) throw std::runtime_error("错误: 除零错误");
+        push(pop() / b);
+    }
+    else if (op == "sqrt") {
+        double a = pop();
+        if (a &lt; 0) throw std::runtime_error("错误: 负数不能开平方根");
+        push(std::sqrt(a));
+    }
+    else if (op == "^") { double b = pop(); push(std::pow(pop(), b)); }
+    else if (op == "fib") {
+        int n = static_cast&lt;int&gt;(pop());
+        if (n &lt; 0) throw std::runtime_error("错误: 斐波那契数列索引不能为负");
+        push(fibonacci(n));
+    }
+    else throw std::runtime_error("错误: 未知操作符 '" + op + "'");
+}
+</code></pre>
+
+<p>注意： <code>fib</code> 采用迭代实现，以避免递归栈溢出。</p >
+
+<h3 id="4.-表达式解析与执行">4. 表达式解析与执行</h3>
+
+<p>RPN 表达式的解析逻辑非常直接：</p >
+
+<ol>
+<li>使用 <code>std::istringstream</code> 分词；</li>
+<li>依次判断每个 token 是数字还是操作符；</li>
+<li>若为数字，压入栈；</li>
+<li>若为操作符，调用 <code>calculate()</code>；</li>
+<li>最后检查栈中是否只剩一个结果。</li>
+</ol>
+
+<pre><code class="language-cpp">double evaluateRPN(const std::string&amp; expr, RPNCalculator&amp; calc) {
+    std::istringstream iss(expr);
+    std::string token;
+
+    while (iss &gt;&gt; token) {
+        if (isNumber(token)) calc.push(std::stod(token));
+        else calc.calculate(token);
+    }
+
+    if (calc.size() != 1)
+        throw std::runtime_error("错误: 表达式不完整");
+
+    return c
